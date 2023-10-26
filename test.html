@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>canvas 绘制</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        #heart{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .card {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 0;
+            left: -25px;
+            background-color: bisque;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="heart">
+    </div>
+
+    <script>
+        function getHeartPositions() {
+            const OFFSET = 50
+            // 绘制心形代码
+            const screenWidth = window.screen.width
+            const screenHeight = window.screen.height
+            // const heartEl = document.querySelector('#heart')
+            // 初始化 heart 宽高，位置
+            const initHeart = () => {
+                const heartWidth = screenWidth * 0.8
+                // heartEl.style.left = `${screenWidth/2}px`
+                // heartEl.style.bottom = `${HEART_BOTTOM}px`
+                const bigSize = heartWidth * 0.25
+                const size = heartWidth * 0.1
+                const border = heartWidth * 0.01
+                // 构造 27 个方块的位置，知道 bottom,left 即可
+                const cardMap = {
+                    1: {left: -size/2, bottom: border, size: size},
+                    2: {left: -(bigSize/2+size+border), bottom: (bigSize+size+border-2*size), size: size},
+                    3: {left: (bigSize/2+border), bottom: (bigSize+size+border-2*size), size},
+                    4: {left: -bigSize/2, bottom: size + border*2, size: bigSize},
+                }
+                cardMap[5] = {left: -(bigSize/2+size+border), bottom: cardMap[2].bottom + size + border, size}
+                cardMap[6] = {left: cardMap[5].left-size-border, bottom: cardMap[2].bottom + size + border, size}
+                cardMap[7] = {left: bigSize/2+border, bottom: cardMap[2].bottom + size + border, size}
+                cardMap[8] ={left: bigSize/2+border*2+size, bottom: cardMap[2].bottom + size + border, size},
+
+                cardMap[9] = {left: -bigSize/2, bottom: cardMap[4].bottom+bigSize+border, size: bigSize}
+                cardMap[10] = {left: cardMap[9].left-bigSize-border, bottom: cardMap[9].bottom, size: bigSize}
+                cardMap[11] = {left: bigSize/2+border, bottom: cardMap[9].bottom, size: bigSize}
+
+                cardMap[12] = {left: -bigSize/2-bigSize-2*border-size, bottom: cardMap[9].bottom+bigSize - 2 * size-border, size}
+                cardMap[13] = {left: -bigSize/2-bigSize-2*border-size, bottom: cardMap[12].bottom+size+border, size}
+                cardMap[14] = {left: bigSize/2+bigSize+border*2, bottom: cardMap[9].bottom+bigSize - 2 * size-border, size}
+                cardMap[15] = {left: bigSize/2+bigSize+border*2, bottom: cardMap[12].bottom+size+border, size}
+
+                cardMap[16] = {left: -bigSize/2-bigSize-2*border-size, bottom: cardMap[9].bottom + bigSize + border, size}
+                cardMap[17] = {left: cardMap[16].left + size + border, bottom: cardMap[16].bottom, size}
+                cardMap[18] = {left: cardMap[17].left + size + border, bottom: cardMap[16].bottom, size}
+                cardMap[19] = {left: cardMap[18].left + size + border, bottom: cardMap[16].bottom, size}
+                cardMap[20] = {left: cardMap[17].left, bottom: cardMap[16].bottom + border + size, size}
+                cardMap[21] = {left: cardMap[20].left + size + border, bottom: cardMap[20].bottom, size}
+
+                cardMap[22] = {left: cardMap[11].left + bigSize - 3 * size - 2 * border, bottom: cardMap[16].bottom, size}
+                cardMap[23] = {left: cardMap[22].left + border + size, bottom: cardMap[16].bottom, size}
+                cardMap[24] = {left: cardMap[23].left + border + size, bottom: cardMap[16].bottom, size}
+                cardMap[25] = {left: cardMap[24].left + border + size, bottom: cardMap[16].bottom, size}
+
+                cardMap[26] = {left: cardMap[23].left + border + size, bottom: cardMap[16].bottom + border + size, size}
+                cardMap[27] = {left: cardMap[26].left + border + size, bottom: cardMap[26].bottom, size}
+
+                // 基于 sequence 渲染图形
+                // width, height, left, top
+
+                const sequence = Object.keys(cardMap).map(key => {
+                    const { left, bottom, size } = cardMap[key]; 
+                    
+                    return {
+                        left: left + screenWidth / 2,
+                        top: screenHeight - OFFSET - bottom - size,
+                        width: size,
+                        height: size,
+                        key
+                    }
+                })
+                return sequence
+            }
+            return initHeart()
+        }
+
+        const positions = getHeartPositions()
+
+        const heartEl = document.querySelector('#heart')
+
+        for(let i = 0; i < positions.length; i++) {
+            for(let {left, top, width, height, key} of positions) {
+                const card = document.createElement('div')
+                card.className = 'card'
+                card.style.width = width + 'px'
+                card.style.height = height + 'px'
+                card.style.left = left + 'px'
+                card.style.top = top + 'px'
+                const textNode = document.createTextNode(key)
+                card.appendChild(textNode)
+                heartEl.appendChild(card)
+            }
+        }
+        
+    </script>
+    
+</body>
+</html>

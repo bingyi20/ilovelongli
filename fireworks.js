@@ -18,7 +18,7 @@ window.onload = function() {
 		this.initialY = y
 		this.x = x;
 		this.y = y;
-		this.vx = 2;
+		this.vx = 0;
 		this.vy = 2;
 		this.radius = 4;
 		this.color = color;
@@ -78,7 +78,7 @@ window.onload = function() {
 			var dx = that.tx - that.x, dy = that.ty - that.y;
 			that.x = Math.abs(dx) < 0.1 ? that.tx : (that.x + dx*0.01);
 			that.y = Math.abs(dy) < 0.1 ? that.ty : (that.y + dy*0.01);
-			if (dx == 0 || dy == 0 || that.y >= 700 || that.x <= 300 || that.x >= 1700) {
+			if (that.y >= canvas.height || that.x <= -50 || that.x >= canvas.width+50) {
 				that.fragDisappear = true;
 			}
 		}
@@ -88,7 +88,7 @@ window.onload = function() {
 		var g = Math.round(getRandom(200, 255));
 		var b = Math.round(getRandom(0, 255));
 		var color = 'rgb(' + r + ',' + g + ',' + b + ')';
-		var fire = new func(960 + getRandom(-300, 300), 800, color, getRandom(-5, 5), getRandom(0, 3));
+		var fire = new func(187 + getRandom(-187, 187), canvas.height, color, getRandom(-1, 1), getRandom(0, 3));
 		return fire;
 	}
 
@@ -148,7 +148,7 @@ window.onload = function() {
 		fire.y = fire.trackRadius * Math.sin(Math.PI/180 * fire.angel) + 700;
 		fire.angel += 2;
 	}
-	var button = document.getElementById('animationTest');
-	button.addEventListener('click', function() {
-		(new CreateFireObj(960, 700, 'blue', 100, Math.random()*3, Math.random()*3)).animate();
-	})
+	// var button = document.getElementById('animationTest');
+	// button.addEventListener('click', function() {
+	// 	(new CreateFireObj(960, 700, 'blue', 100, Math.random()*3, Math.random()*3)).animate();
+	// })
