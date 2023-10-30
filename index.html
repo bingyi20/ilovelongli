@@ -111,7 +111,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			z-index: 999;
+			z-index: 9999;
 		}
 
 		#drawCanvas {
@@ -125,7 +125,7 @@
 	<div class="app" id="app">
 		<div id="loading">
 			<h1 id="loading-text">努力加载中...</h1>
-			<button id="begin" onclick="start()" style="display: none;">点我开始</button>
+			<button id="begin" onclick="start()" style="display: none; width: 200px; height: 50px; line-height: 50px;font-size: 20px;">开始</button>
 		</div>
 		<canvas id="canvas"  width="375" height="812">浏览器不支持canvas</canvas>
 		<div class="backgroundCity" id="city">

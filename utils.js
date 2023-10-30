@@ -1,5 +1,5 @@
 function getHeartPositions() {
-    const OFFSET = 320
+    const OFFSET = 350
     // 绘制心形代码
     const screenWidth = window.screen.width
     const screenHeight = window.screen.height
