@@ -100,26 +100,50 @@
 			opacity: 0.9;
 			border-radius: 50%;
         }
+		#loading {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			background-color: aliceblue;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 999;
+		}
+
+		#drawCanvas {
+			position: absolute;
+			left: -10000px;
+			top: -1000px
+		}
 	</style>
 </head>
 <body>
 	<div class="app" id="app">
-		<canvas id="canvas"  width="375" height="812">浏览器不支持canvas</canvas>
-		<div class="backgroundCity">
-			<img src="./imgs/city.png">
+		<div id="loading">
+			<h1 id="loading-text">Loading...</h1>
+			<button id="begin" onclick="start()" style="display: none;">点我开始</button>
 		</div>
-		<div class="moon">
-			<img  src="./imgs/moon.png">
+		<canvas id="canvas"  width="375" height="812">浏览器不支持canvas</canvas>
+		<div class="backgroundCity" id="city">
+			<!-- <img src="" id="cityImage"> -->
+		</div>
+		<div class="moon" id="moon">
+			<!-- <img  src="" id="moonImage"> -->
 			<div id="carousel" style="opacity: 0;"></div>
 		</div>
 		<div class="bangyu" id="bangyu">
-			<img src="./imgs/bangyu.png">
+			<!-- <img src="" id="bangyuImage"> -->
 		</div>
 		<div class="longli" id="longli">
-			<img src="./imgs/longli.png" alt="">
+			<!-- <img src="" id="longliImage"> -->
 		</div>
 
-		<audio id="music" autoplay="autoplay" loop>
+		<canvas id="drawCanvas"></canvas>
+
+		<audio id="music" loop>
 			<source src="./andio/bg.mp3" type="audio/mp3">
 		  	您的浏览器不支持 audio 元素。
 		  </audio>
@@ -134,16 +158,36 @@
 
 	<script>
 		const app = document.querySelector('#app')
+		var drawCanvas = document.querySelector('#drawCanvas');
+		const drawCtx = drawCanvas.getContext('2d');
+
 		const screenWidth = window.screen.width
     	const screenHeight = window.screen.height
-		const images = new Array(27).fill(0).map((_, idx) => `./imgs/people-${idx+1}.jpg`)
+
+		const imageToDataUrl = (image) => {
+			drawCanvas.width = image.width;
+  			drawCanvas.height = image.height;
+			drawCtx.drawImage(image, 0, 0);
+
+			const res = drawCanvas.toDataURL('image/png')
+			drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height)
+
+			return res
+		}
+
+		const images = new Array(27).fill(0)
+									.map((_, idx) => `./imgs/people-${idx+1}.jpg`)
+									.map(url => loadImg(url).then(res=>imageToDataUrl(res)))
+
+	
+
 		// 轮播
-		const play = (url) => {
+		const play = (image) => {
 			const carousel = document.querySelector('#carousel')
 			let opacity = 0
 			return new Promise((resolve) => {
 				// 2. 替换图片
-				carousel.style.backgroundImage = `url(${url})`
+				carousel.style.backgroundImage = `url(${image})`
 				// 3. 不断明显
 				const opaque = () => {
 					opacity += 0.1
@@ -154,14 +198,14 @@
 						}, 100)
 					} else {
 						carousel.style.opacity = 0
-						resolve(url)
+						resolve(image)
 					}
 				}
 				opaque()
 			})
 		}
 
-		const generatorCard = (url, top, left, size) => {
+		const generatorCard = (image, top, left, size) => {
 			console.log(top, left)
 			const el = document.createElement('div')
 			el.className = 'card'
@@ -169,7 +213,7 @@
 			el.style.height = '100px'
 			el.style.top = '50px'
 			el.style.left = '50px'
-			el.style.backgroundImage = `url('${url}')`
+			el.style.backgroundImage = `url('${image}')`
 			app.appendChild(el)
 			return new Promise((resolve) => {
 				setTimeout(() => {
@@ -186,12 +230,6 @@
 		}
 
 		const positions = getHeartPositions()
-
-		play(images[0]).then(url => {
-			const {width, top, left} = positions[0]
-			return generatorCard(url, top, left, width)
-		})
-
 
 		const bangyu = document.querySelector('#bangyu')
 		const longli = document.querySelector('#longli')
@@ -214,30 +252,19 @@
 		}
 
 
-		const run = (idx) => {
-			return play(images[idx]).then(url => {
+		const run = (idx, imageObjects) => {
+			return play(imageObjects[idx]).then(url => {
 				const {width, top, left} = positions[idx]
 				coupleMove()
 				return generatorCard(url, top, left, width)
 			})
-			console.log(images[idx])
 		}
-
-		let p = Promise.resolve()
-
-		for(let i = 0; i < images.length; i++) {
-			p = p.then(res => {
-				return run(i)
-			})
-		}
-
 
 		const playMusic = () => {
 			const music = document.querySelector('#music')
 			if(music.canPlay) {
 				music.play()
 			} else {
-				alert('点击屏幕播放音乐')
 				const once = () => {
 					console.log('触发播放')
 					music.play()
@@ -246,14 +273,67 @@
 				app.addEventListener('click', once)
 			}
 		}
-		playMusic()
 
-		console.log(positions.length)
-		console.log(images.length)
+		const playHeart = () => {
 
-		
+			let imageObjects = []
 
+			const player = Promise.all(images).then(res => {
+				imageObjects = res
+			})
 
+			player.run = () => {
+				let p = Promise.resolve()
+				for(let i = 0; i < imageObjects.length; i++) {
+					p = p.then(res => {
+						return run(i, imageObjects)
+					})
+				}
+				return p
+			}
+
+			return player
+		}
+
+		// 月亮、我、龙丽
+		const playOther = () => {
+			const baseNames = ['city', 'moon', 'bangyu', 'longli']
+			const loadUrls = baseNames.map(url => {
+				return loadImg(`./imgs/${url}.png`)
+			})
+			const els = baseNames.map(name => {
+				return document.querySelector(`#${name}`)
+			})
+			return Promise.all(loadUrls).then(images => {
+				images.forEach((image, idx) => {
+					els[idx].appendChild(image)
+				});
+			})
+
+		}
+
+		// playOther().then(res => {
+		// 	console.log('其它场景加载完成')
+		// })
+
+		const heart = playHeart()
+		const other = playOther()
+
+		const setup = () => {
+			return Promise.all([heart, other]).then(res => {
+				console.log('所有场景加载完成')
+				document.querySelector('#loading-text').style.display = 'none'
+				document.querySelector('#begin').style.display = 'block'
+			})
+		}
+
+		const start = () => {
+			document.querySelector('#loading').style.display = 'none'
+			heart.run()
+			playMusic()
+		}
+
+		setup()
 
 	</script>
 

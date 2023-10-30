@@ -66,3 +66,15 @@ function getHeartPositions() {
     }
     return initHeart()
 }
+
+
+
+function loadImg(url) {
+    return new Promise((resolve) => {
+        const el = new Image()
+        el.src = url
+        el.onload = () => {
+            resolve(el)
+        }
+    })
+}
